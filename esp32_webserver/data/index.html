@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>Test</title>
+
+<script language="javascript" type="text/javascript">
+    var url = "ws://192.168.0.102:81/"; // 연결된 본인의 IP:포트 입력 
+
+    function init() {
+
+        wsConnect(url);
+    }
+
+    function wsConnect(url) {
+
+        websocket = new WebSocket(url);
+        //이벤트콜백함수
+        websocket.onopen = function (evt) { //시작
+            onOpen(evt)
+        };
+        websocket.onclose = function (evt) { //닫힘
+            onClose(evt)
+        };
+        websocket.onmessage = function (evt) { //메세지
+            onMessage(evt)
+        };
+        websocket.onerror = function (evt) { //에러
+            onError(evt)
+        };
+    }
+
+    function onOpen(evt) {
+        console.log("Connected");
+        doSend("getLEDstate");
+    }
+
+    function onClose(evt) {
+        console.log("Disconnected");
+        setTimeout(function () {
+            wsConnect(url)
+        }, 2000);
+    }
+    //서버로부터 메세지가 날라올 때 함수
+    function onMessage(evt) {
+        //서버로부터의 메세지
+        console.log("Received: " + evt.data);
+        switch (evt.data) {
+            case "0":
+                document.getElementById('ledState').innerHTML = "<b><font color='black'> 꺼짐 </font></b>"
+                break;
+            case "1":
+                document.getElementById('ledState').innerHTML = "<b><font color='red'> 켜짐 </font></b>"
+                break;
+            default:
+                break;
+        }
+
+    }
+    // 에러처리
+    function onError(evt) {
+        console.log("ERROR: " + evt.data);
+    }
+    //서버에 메세지 전송
+    function doSend(message) {
+        console.log("Sending: " + message);
+        websocket.send(message);
+    }
+
+    function onPress() {
+        doSend("toggleLED");
+        doSend("getLEDstate");
+    }
+
+    window.addEventListener("load", init, false); // load 되었을때 init 실행
+</script>
+
+<h2>LED Control TEST </h2>
+<button id="toggleButton" onclick="onPress()">Toggle LED</button>
+<p></p>
+<p id="ledState"></p>
+
+</html>
+
+<!-- <!DOCTYPE html>
+<meta charset="utf-8" />
+<title>WebSocket Test</title>
+<script language="javascript" type="text/javascript">
+    var wsUri = "ws://192.168.0.102:1337/";
+    var output;
+
+    function init() {
+        output = document.getElementById("output");
+        testWebSocket();
+    }
+
+    function testWebSocket() {
+        websocket = new WebSocket(wsUri);
+        websocket.onopen = function (evt) {
+            onOpen(evt)
+        };
+        websocket.onclose = function (evt) {
+            onClose(evt)
+        };
+        websocket.onmessage = function (evt) {
+            onMessage(evt)
+        };
+        websocket.onerror = function (evt) {
+            onError(evt)
+        };
+    }
+
+    function onOpen(evt) {
+        writeToScreen("CONNECTED");
+        doSend("WebSocket rocks");
+    }
+
+    function onClose(evt) {
+        writeToScreen("DISCONNECTED");
+    }
+
+    function onMessage(evt) {
+        writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
+        websocket.close();
+    }
+
+    function onError(evt) {
+        writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+    }
+
+    function doSend(message) {
+        writeToScreen("SENT: " + message);
+        websocket.send(message);
+    }
+
+    function writeToScreen(message) {
+        var pre = document.createElement("p");
+        pre.style.wordWrap = "break-word";
+        pre.innerHTML = message;
+        output.appendChild(pre);
+    }
+
+    window.addEventListener("load", init, false);
+</script>
+
+<h2>WebSocket Test</h2>
+
+<div id="output"></div> -->
