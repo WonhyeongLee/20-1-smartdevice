@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>Test</title>
+
+<head>
+    <script language="javascript" type="text/javascript">
+        var url = "ws://172.30.1.53:52274/";
+    
+        function init() {
+    
+            wsConnect(url);
+        }
+    
+        function wsConnect(url) {
+    
+            websocket = new WebSocket(url);
+            //이벤트콜백함수
+            websocket.onopen = function (evt) { //시작
+                onOpen(evt)
+            };
+            websocket.onclose = function (evt) { //닫힘
+                onClose(evt)
+            };
+            websocket.onmessage = function (evt) { //메세지
+                onMessage(evt)
+            };
+            websocket.onerror = function (evt) { //에러
+                onError(evt)
+            };
+    
+        }
+    
+        function onOpen(evt) {
+            console.log("Connected");
+            doSend("getLEDstate");
+        }
+    
+        function onClose(evt) {
+            console.log("Disconnected");
+            setTimeout(function () {
+                wsConnect(url)
+            }, 2000);
+        }
+        //서버로부터 메세지가 날라올 때 함수
+        function onMessage(evt) {
+            let recData = JSON.parse(evt.data); // 서버에서 온 String 형식의 json 데이터를 다시 json 형식으로 파싱해서 변수에 저장
+            console.log(recData);
+
+            switch (recData.Type) { //recData.Type 이 DHT11_1 일때 
+                case "DHT11_1":
+                    console.log("1");
+                    document.getElementById('temp').innerHTML = "<b><font color='green' size='25'>" + recData.value.Temp +"</font></b>"
+                    document.getElementById('humid').innerHTML = "<b><font color='green' size='25'>" + recData.value.Humid +"</font></b>"
+                    break;
+                case "DHT11_2":
+                    console.log("2");
+
+                default:
+                    break;
+            }
+    
+        }
+        // 에러처리
+        function onError(evt) {
+            console.log("ERROR: " + evt.data);
+        }
+        //서버에 메세지 전송
+        function doSend(message) {
+            console.log("Sending: " + message);
+            websocket.send(message);
+        }
+    
+        function onPress() {
+            //doSend("toggleLED");
+            //doSend("getLEDstate");
+        }
+    
+        window.addEventListener("load", init, false); // load 되었을때 init 실행
+    </script>
+</head>
+<body>
+    <!-- 9주차 실습부분 -->
+    <h1>ESP32 DHT <br> Server </h1>
+    <p>
+        Temperature<div id="temp"></div> &#176;
+    </p>
+    <p>Humidity
+        <div id="humid"></div> %
+    </p>
+</body>
+
+</html>
